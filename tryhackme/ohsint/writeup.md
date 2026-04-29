@@ -9,6 +9,8 @@
 **Categoria:** OSINT
 **Data:** 29/04/2026
 
+· Conquista: [Badge - OhSINT](https://tryhackme.com/Lucas.Zafalon/badges/ohsint?utm_campaign=social_share&utm_medium=social&utm_content=badge&utm_source=copy&sharerId=663e76ced6984cc4849c6b91)
+
 ---
 
 ## 🧠 Resumo
