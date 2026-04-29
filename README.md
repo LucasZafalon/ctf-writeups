@@ -13,6 +13,7 @@ Perfil TryHackMe: [Lucas.Zafalon](https://tryhackme.com/p/Lucas.Zafalon)
 
 ### Badges
 - OhSINT
+- Blue
 
 ### Rooms
 - Analista de Segurança Júnior
