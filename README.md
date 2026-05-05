@@ -14,6 +14,10 @@ Perfil TryHackMe: [Lucas.Zafalon](https://tryhackme.com/p/Lucas.Zafalon)
 ### Badges
 - OhSINT
 - Blue
+- Cat Linux.txt
+- Adversarial Defence Ops
+- SNOW/OFF
+- The Return of the Yeti
 
 ### Rooms
 - Analista de Segurança Júnior
