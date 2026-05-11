@@ -2,7 +2,7 @@
 
 Room: ![TryHackMe Badge](https://tryhackme.com/Lucas.Zafalon/badges/ohsint?utm_campaign=social_share&utm_medium=social&utm_content=badge&utm_source=copy&sharerId=663e76ced6984cc4849c6b91)
 
-A room **OhSINT** do [TryHackMe](https://tryhackme.com?utm_source=chatgpt.com) é uma introdução prática ao mundo de **OSINT (Open Source Intelligence)**, onde utilizamos apenas informações públicas para investigar um alvo.
+A room **OhSINT** do TryHackMe é uma introdução prática ao mundo de **OSINT (Open Source Intelligence)**, onde utilizamos apenas informações públicas para investigar um alvo.
 
 Nesta room aprendemos:
 
