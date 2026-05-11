@@ -1,47 +1,403 @@
-# TryHackMe: Adversarial Defence Ops - Writeup
+# Defending Adversarial Attacks - Writeup
 
-![Blue Team Badge]([https://tryhackme-badges.s3.amazonaws.com/adversarial-defence-ops.png](https://tryhackme.com/Lucas.Zafalon/badges/adversarial-defence-ops?utm_campaign=social_share&utm_medium=social&utm_content=badge&utm_source=copy&sharerId=663e76ced6984cc4849c6b91))
+Room: [TryHackMe Badge](https://tryhackme.com/Lucas.Zafalon/badges/adversarial-defence-ops?utm_campaign=social_share&utm_medium=social&utm_content=badge&utm_source=copy&sharerId=663e76ced6984cc4849c6b91)
 
-## 🛡️ Visão Geral
-Este writeup detalha a resolução da sala **Adversarial Defence Ops**. O foco aqui é a transição da segurança passiva para a **Defesa Ativa**, utilizando inteligência de ameaças para detectar, analisar e mitigar táticas de adversários em ambientes corporativos.
+A room **Defending Adversarial Attacks** da TryHackMe aborda técnicas de defesa contra ataques adversariais em modelos de Machine Learning e Inteligência Artificial.
 
----
+O foco principal é entender:
 
-## 🔬 Tópicos Analisados
-*   **Mapeamento MITRE ATT&CK:** Identificação de táticas, técnicas e procedimentos (TTPs).
-*   **Detecção de Movimentação Lateral:** Monitoramento de acessos não autorizados entre sistemas.
-*   **Análise de Persistência:** Identificação de mecanismos que permitem ao atacante manter o acesso após o reboot.
-*   **Resposta a Incidentes:** Metodologias para contenção e erradicação de ameaças.
+* Como modelos de IA podem ser enganados
+* Técnicas para endurecer modelos (hardening)
+* Estratégias defensivas contra ataques FGSM, BIM e PGD
+* Métodos de detecção de entradas adversariais
+* Robustez em IA aplicada à segurança
 
----
+Essa room é continuação da room:
 
-## 🚀 Resumo da Operação
+* Detecting Adversarial Attacks
 
-### 1. Perfil do Adversário
-A análise começou com o entendimento do perfil do atacante. Utilizei o framework MITRE para correlacionar eventos isolados e identificar que estávamos lidando com uma tentativa de exfiltração de dados sensíveis.
-
-### 2. Identificação de Técnicas (TTPs)
-Durante o laboratório, foram identificadas e mitigadas as seguintes técnicas:
-*   **Initial Access:** Através de spearphishing e exploração de serviços vulneráveis.
-*   **Discovery:** Uso de comandos nativos do SO para mapear a rede interna.
-*   **Collection:** Agrupamento de dados para futura exfiltração.
-
-### 3. Implementação de Defesas
-Diferente de uma abordagem reativa, a operação focou em:
-*   **Hardening de Sistemas:** Fechamento de portas desnecessárias e ajuste de políticas de privilégio mínimo.
-*   **Monitoramento de Logs (SIEM):** Criação de regras de correlação para identificar padrões anômalos de tráfego.
 
 ---
 
-## 🧠 Insights de Defesa (Blue Team Perspective)
-Como profissional de infraestrutura com foco em Cybersecurity, este laboratório reforçou pontos críticos:
-1.  **Visibilidade é Tudo:** Não se defende o que não se vê. A configuração correta de logs (como o Rsyslog e ferramentas de SIEM) é a primeira linha de defesa.
-2.  **Contexto sobre Alertas:** Um alerta isolado pode ser um falso positivo, mas uma sequência de técnicas mapeadas no MITRE indica um ataque real em curso.
-3.  **Automação na Resposta:** Utilizar scripts para isolar máquinas comprometidas ou bloquear IPs maliciosos em tempo real é o que separa uma contenção bem-sucedida de um desastre.
+# Task 1 - Introduction
+
+Nesta primeira task a room apresenta os objetivos do laboratório.
+
+O conteúdo explica que:
+
+* Modelos de IA são vulneráveis a manipulações
+* Pequenas alterações em entradas podem causar classificações erradas
+* Precisamos aplicar mecanismos defensivos para aumentar a robustez
+
+Também é recomendado conhecimento básico em:
+
+* Jupyter Notebook
+* Conceitos básicos de IA/ML
+* Ataques adversariais
+
+
+## Resposta
+
+```bash
+No answer needed
+```
 
 ---
 
-## 🔧 Stack de Defesa Utilizada
-*   **Análise:** MITRE ATT&CK Navigator.
-*   **Monitoramento:** Análise de logs de eventos e tráfego de rede.
-*   **Ambiente:** Lab controlado simulando uma infraestrutura corporativa mista.
+# Task 2 - Defence Strategies for Adversarial Attacks
+
+Nesta etapa aprendemos estratégias defensivas contra ataques adversariais.
+
+---
+
+# Gradient Hiding
+
+Uma das técnicas apresentadas é:
+
+```bash
+Gradient Hiding
+```
+
+Essa técnica tenta esconder ou dificultar o acesso aos gradientes utilizados pelos ataques adversariais.
+
+Ataques como:
+
+* FGSM
+* BIM
+* PGD
+
+Dependem de gradientes para gerar perturbações.
+
+O Gradient Hiding reduz a eficiência principalmente de ataques mais simples.
+
+
+---
+
+## Pergunta
+
+### Which gradient-based attack does gradient hiding defend against best?
+
+## Resposta
+
+```bash
+FGSM
+```
+
+
+---
+
+# FGSM (Fast Gradient Sign Method)
+
+O FGSM é um dos ataques adversariais mais conhecidos.
+
+Ele altera pixels da entrada usando os gradientes do modelo:
+
+x_{adv}=x+\epsilon\cdot sign(\nabla_x J(\theta,x,y))
+
+Onde:
+
+* (x_{adv}) = imagem adversarial
+* (\epsilon) = intensidade da perturbação
+* (J) = função de perda
+* (\nabla_x) = gradiente em relação à entrada
+
+Pequenas alterações quase invisíveis podem fazer a IA errar completamente a classificação.
+
+
+---
+
+# Task 3 - Advanced Defence Techniques
+
+Agora aprendemos técnicas mais avançadas de proteção contra ataques adversariais.
+
+---
+
+# NULL Labeling
+
+Uma técnica apresentada é:
+
+```bash
+NULL Labeling
+```
+
+Essa abordagem adiciona um rótulo especial chamado:
+
+```bash
+NULL
+```
+
+Quando o modelo identifica uma entrada suspeita ou adversarial, ele pode rejeitá-la ao invés de classificá-la incorretamente.
+
+---
+
+## Pergunta
+
+### Which label is added to a model to reject adversarial inputs?
+
+## Resposta
+
+```bash
+NULL
+```
+
+
+---
+
+# MagNet
+
+Outra defesa importante apresentada é:
+
+```bash
+MagNet
+```
+
+O MagNet utiliza dois componentes principais:
+
+* Detector
+* Reformer
+
+O objetivo é:
+
+* Detectar entradas suspeitas
+* Corrigir pequenas perturbações antes da classificação
+
+
+---
+
+# Detector
+
+O:
+
+```bash
+Detector
+```
+
+Verifica se a entrada parece legítima ou anômala.
+
+---
+
+## Pergunta
+
+### Which component in MagNet checks if an input looks normal?
+
+## Resposta
+
+```bash
+Detector
+```
+
+
+---
+
+# Reformer
+
+O:
+
+```bash
+Reformer
+```
+
+Tenta reconstruir entradas levemente modificadas antes que cheguem ao classificador.
+
+---
+
+## Pergunta
+
+### Which component in MagNet repairs slightly perturbed inputs?
+
+## Resposta
+
+```bash
+reformer
+```
+
+
+---
+
+# Técnicas Defensivas Aprendidas
+
+Durante a room aprendemos:
+
+* Gradient Hiding
+* Defensive Distillation
+* Feature Squeezing
+* MagNet
+* NULL Labeling
+* Adversarial Training
+
+
+---
+
+# Task 4 - Pet Trouble
+
+Nesta task prática trabalhamos com treinamento de modelos de Machine Learning.
+
+Um dos conceitos abordados é:
+
+```bash
+Overfitting
+```
+
+---
+
+# Overfitting
+
+Overfitting ocorre quando:
+
+* O modelo aprende demais os dados de treinamento
+* Perde capacidade de generalização
+* Fica menos eficiente em dados reais
+
+Isso normalmente acontece quando:
+
+* Existem muitas epochs
+* Poucos dados
+* Modelo excessivamente complexo
+
+
+---
+
+## Pergunta
+
+### What can happen if you run too many epochs?
+
+## Resposta
+
+```bash
+overfitting
+```
+
+
+---
+
+# Conceitos Importantes
+
+---
+
+# Adversarial Attacks
+
+Ataques adversariais consistem em:
+
+* Alterações pequenas e intencionais
+* Inputs manipulados
+* Objetivo de enganar IA/ML
+
+Esses ataques podem afetar:
+
+* Reconhecimento facial
+* Veículos autônomos
+* Sistemas bancários
+* Sistemas antifraude
+* Diagnósticos médicos
+
+
+---
+
+# White-box vs Black-box
+
+## White-box
+
+O atacante possui:
+
+* Arquitetura do modelo
+* Gradientes
+* Pesos
+* Total conhecimento interno
+
+## Black-box
+
+O atacante possui apenas:
+
+* Entradas
+* Saídas
+* Sem acesso interno ao modelo
+
+
+---
+
+# Técnicas de Defesa
+
+| Técnica              | Objetivo                          |
+| -------------------- | --------------------------------- |
+| Gradient Hiding      | Esconder gradientes               |
+| Feature Squeezing    | Reduzir ruído adversarial         |
+| Adversarial Training | Treinar com exemplos adversariais |
+| NULL Labeling        | Rejeitar entradas suspeitas       |
+| MagNet               | Detectar e reparar entradas       |
+
+---
+
+# Fluxo da Room
+
+```bash
+Ataques adversariais
+        ↓
+Identificação das vulnerabilidades
+        ↓
+Aplicação de técnicas defensivas
+        ↓
+Hardening do modelo
+        ↓
+Maior robustez da IA
+```
+
+---
+
+# Comandos e Ferramentas Utilizadas
+
+## Jupyter Notebook
+
+```bash
+jupyter notebook
+```
+
+## Python
+
+```python
+import torch
+import numpy as np
+```
+
+## Frameworks comuns
+
+```bash
+TensorFlow
+PyTorch
+```
+
+---
+
+# Importância na Cibersegurança
+
+A segurança em IA/ML está se tornando extremamente importante devido ao crescimento do uso de IA em:
+
+* SOCs
+* SIEMs
+* Detecção de fraudes
+* EDR/XDR
+* Monitoramento de ameaças
+* Sistemas biométricos
+
+Ataques adversariais podem comprometer completamente modelos defensivos.
+
+
+---
+
+# Conclusão
+
+A room Defending Adversarial Attacks é uma excelente introdução à área de:
+
+* AI Security
+* ML Security
+* Adversarial Machine Learning
+* IA aplicada à Cibersegurança
+
+Ela demonstra como:
+
+* Modelos podem ser enganados
+* Defesas podem ser implementadas
+* Não existe proteção perfeita
+* Segurança em IA exige múltiplas camadas defensivas
+
+Além disso, a room reforça a importância crescente da segurança em IA conforme sistemas inteligentes passam a ser utilizados em ambientes críticos.
+
