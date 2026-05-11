@@ -1,142 +1,334 @@
+# OhSINT - Writeup
 
-# 📝 MEU PRIMEIRO WRITEUP (OhSINT)
+Room: ![TryHackMe Badge](https://tryhackme.com/Lucas.Zafalon/badges/ohsint?utm_campaign=social_share&utm_medium=social&utm_content=badge&utm_source=copy&sharerId=663e76ced6984cc4849c6b91)
 
----
+A room **OhSINT** do [TryHackMe](https://tryhackme.com?utm_source=chatgpt.com) é uma introdução prática ao mundo de **OSINT (Open Source Intelligence)**, onde utilizamos apenas informações públicas para investigar um alvo.
 
-## OhSINT — TryHackMe
+Nesta room aprendemos:
 
-**Dificuldade:** Fácil
-**Categoria:** OSINT
-**Data:** 29/04/2026
+* Extração de metadados
+* Investigação em redes sociais
+* Enumeração em GitHub
+* Pesquisa de Wi-Fi/BSSID
+* Análise de código-fonte
+* Correlação de informações públicas
 
-· Conquista: [Badge - OhSINT](https://tryhackme.com/Lucas.Zafalon/badges/ohsint?utm_campaign=social_share&utm_medium=social&utm_content=badge&utm_source=copy&sharerId=663e76ced6984cc4849c6b91)
-
----
-
-## 🧠 Resumo
-
-Desafio de OSINT baseado na análise de uma imagem contendo metadados sensíveis. Através da extração de informações EXIF e correlação com dados públicos, foi possível identificar o usuário, localização, redes utilizadas e informações pessoais expostas online.
 
 ---
 
-## 🔍 Enumeração
+# Task 1 - OhSINT
 
-### Análise inicial
+Ao iniciar a room, recebemos apenas uma imagem:
 
-O desafio fornece uma imagem como ponto de partida. A primeira etapa foi realizar análise manual e extração de metadados.
-
-### Extração de metadados
-
-Utilizei a ferramenta ExifTool:
-
-Comando:
-
-```
-exiftool WindowsXP_1551719014755.jpg
+```bash
+WindowsXP.jpg
 ```
 
-### Informações relevantes encontradas:
-
-* Autor: **OWoodflint**
-* Coordenadas GPS: **54°17'41.27"N, 2°15'1.33"W**
-* Indicação de localização no Reino Unido
+O desafio consiste em utilizar técnicas de OSINT para responder todas as perguntas utilizando somente informações públicas.
 
 ---
 
-## 🌐 Investigação OSINT
+# Análise Inicial da Imagem
 
-### Identificação do usuário
+A primeira etapa é analisar a imagem recebida.
 
-A partir do nome **OWoodflint**, foi realizada busca em fontes públicas, levando à identificação de perfis online e presença digital.
+Podemos visualizar a imagem com:
 
-### Localização
+```bash
+xdg-open WindowsXP.jpg
+```
 
-As coordenadas foram analisadas via Google Maps, permitindo identificar a cidade do usuário.
-
----
-
-### Descoberta de rede Wi-Fi
-
-Em um dos perfis encontrados, o usuário divulgou:
-
-* BSSID da rede
-* Comentário indicando uso de Wi-Fi aberto
-
-A partir disso, foi possível identificar o SSID da rede.
+A imagem é o clássico wallpaper do Windows XP.
 
 ---
 
-### Identificação de e-mail
+# Verificando Metadados
 
-Foi encontrado um blog pessoal hospedado em:
+Utilizamos o `exiftool` para extrair metadados da imagem:
 
+```bash
+exiftool WindowsXP.jpg
+```
+
+Nos metadados encontramos:
+
+```bash
+Copyright : OWoodflint
+```
+
+Esse nome será o ponto inicial da investigação.
+
+
+---
+
+# Pesquisando o Usuário
+
+Ao pesquisar por:
+
+```bash
+OWoodflint
+```
+
+Encontramos:
+
+* Perfil no Twitter/X
+* GitHub
+* Blog WordPress
+
+---
+
+# Pergunta 1
+
+## What is this user's avatar of?
+
+Ao acessar o perfil do usuário no Twitter/X, observamos que o avatar é um gato.
+
+## Resposta
+
+```bash
+cat
+```
+
+
+---
+
+# Pergunta 2
+
+## What city is this person in?
+
+No GitHub do usuário encontramos informações indicando que ele mora em:
+
+## Resposta
+
+```bash
+London
+```
+
+Também é possível descobrir utilizando o BSSID encontrado no Twitter e consultando no WiGLE.
+
+
+---
+
+# Pergunta 3
+
+## What is the SSID of the WAP he connected to?
+
+No Twitter/X encontramos o seguinte BSSID:
+
+```bash
+B4:5D:50:AA:86:41
+```
+
+Com ele, acessamos o site:
+
+```bash
+wigle.net
+```
+
+Pesquisando o BSSID, encontramos o nome da rede Wi-Fi.
+
+## Resposta
+
+```bash
+UnileverWiFi
+```
+
+
+---
+
+# Pergunta 4
+
+## What is his personal email address?
+
+No GitHub do usuário encontramos o email pessoal:
+
+## Resposta
+
+```bash
+OWoodflint@gmail.com
+```
+
+
+---
+
+# Pergunta 5
+
+## What site did you find his email address on?
+
+O email foi encontrado no GitHub.
+
+## Resposta
+
+```bash
+Github
+```
+
+
+---
+
+# Pergunta 6
+
+## Where has he gone on holiday?
+
+No blog WordPress do usuário encontramos uma postagem falando sobre férias em:
+
+## Resposta
+
+```bash
+New York
+```
+
+
+---
+
+# Pergunta 7
+
+## What is the person's password?
+
+A última questão exige análise mais detalhada.
+
+Após verificar:
+
+* Twitter
+* GitHub
+* Blog
+
+A senha é encontrada no código-fonte da página WordPress.
+
+Podemos visualizar o source code utilizando:
+
+```bash
+CTRL + U
+```
+
+Ou:
+
+```bash
+view-source:<URL>
+```
+
+No código-fonte encontramos:
+
+## Resposta
+
+```bash
+pennYDr0pper.!
+```
+
+
+---
+
+# Ferramentas Utilizadas
+
+Durante a room utilizamos:
+
+* Google Dorking
+* Exiftool
+* GitHub
+* Twitter/X
 * WordPress
-
-Neste site, foi possível localizar o e-mail pessoal do usuário.
-
----
-
-### Informações pessoais (OSINT)
-
-O blog continha informações adicionais como:
-
-* Viagens realizadas
-* Preferências pessoais
-
-Essas informações foram utilizadas para correlação.
+* WiGLE
+* Análise de código-fonte
 
 ---
 
-## 🔐 Descoberta da senha
+# Comandos Utilizados
 
-A senha foi identificada através de análise de padrões de comportamento do usuário.
+## Exibir imagem
 
-Foi observado que:
+```bash
+xdg-open WindowsXP.jpg
+```
 
-* O usuário reutiliza informações pessoais
-* Referências a viagens e preferências estavam expostas publicamente
+## Extrair metadados
 
-A partir disso, foi possível inferir a senha com base em contexto pessoal.
+```bash
+exiftool WindowsXP.jpg
+```
 
----
+## Ver código-fonte
 
-## 🚩 Respostas
-
-* Avatar: Cat.
-* Cidade: London.
-* SSID: UnileverWiFi
-* Email: OWoodflint@gmail.com
-* Site: Github
-* Férias: New York
-* Senha: pennYDr0pper.!
+```bash
+CTRL + U
+```
 
 ---
 
-## 🧠 Lições
+# Conceitos Aprendidos
 
-Este desafio demonstra como pequenas exposições podem comprometer completamente a segurança de um usuário.
+## OSINT
 
-### Pontos críticos:
+OSINT significa:
 
-* Metadados (EXIF) podem revelar localização precisa
-* Reutilização de username facilita correlação de identidade
-* Divulgação de informações em redes sociais expõe ativos
-* Senhas baseadas em informações pessoais são altamente vulneráveis
+```bash
+Open Source Intelligence
+```
 
----
-
-## 🛡️ Como um SOC detectaria isso
-
-* Monitoramento de vazamento de credenciais em fontes abertas
-* Correlação de identidade digital via ferramentas OSINT
-* Alertas de login suspeito baseado em localização
-* Análise de comportamento anômalo em autenticações
+Consiste em coletar informações públicas disponíveis na internet para investigação.
 
 ---
 
-## 🔐 Mitigações
+## EXIF Metadata
 
-* Remover metadados de arquivos antes de publicar
-* Utilizar senhas fortes e únicas
-* Evitar exposição excessiva de informações pessoais
-* Utilizar autenticação multifator (MFA)
+Metadados EXIF podem conter:
+
+* Autor
+* Modelo da câmera
+* GPS
+* Data
+* Software utilizado
+
+Por isso, sempre é importante analisar arquivos enviados por usuários.
+
+---
+
+# Dicas Importantes
+
+Durante desafios OSINT:
+
+* Analise metadados
+* Pesquise usernames
+* Verifique redes sociais
+* Analise código-fonte
+* Correlacione informações
+* Use Google Dorks
+* Consulte bancos de dados públicos
+
+---
+
+# Fluxo da Investigação
+
+```bash
+Imagem
+   ↓
+Metadados (Exiftool)
+   ↓
+Username encontrado
+   ↓
+Twitter/GitHub/Blog
+   ↓
+Correlação de informações
+   ↓
+Respostas
+```
+
+---
+
+# Conclusão
+
+A room OhSINT é uma excelente introdução ao mundo de:
+
+* OSINT
+* Reconhecimento passivo
+* Investigação digital
+* Correlação de dados públicos
+
+Ela demonstra como pequenas informações públicas podem ser correlacionadas para revelar dados sensíveis de um alvo.
+
+Além disso, mostra a importância de:
+
+* Higiene digital
+* Privacidade online
+* Cuidados com exposição pública
+* Segurança em redes sociais
+
