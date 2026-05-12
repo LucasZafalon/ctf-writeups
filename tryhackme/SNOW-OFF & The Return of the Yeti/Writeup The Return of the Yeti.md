@@ -1,65 +1,276 @@
+# TryHackMe — Advent of Cyber ’23 Side Quest 1: The Return of the Yeti (Writeup em Português)
 
-# Technical Writeup: THM - The Return of the Yeti
+Room: [TryHackMe Badge](https://tryhackme.com/Lucas.Zafalon/badges/aoc5sidequest1?utm_campaign=social_share&utm_medium=social&utm_content=badge&utm_source=copy&sharerId=663e76ced6984cc4849c6b91)
 
-![TryHackMe Yeti Badge]([https://tryhackme.com/Lucas.Zafalon/badges/aoc5sidequest1?utm_campaign=social_share&utm_medium=social&utm_content=badge&utm_source=copy&sharerId=663e76ced6984cc4849c6b91](https://tryhackme.com/Lucas.Zafalon/badges/aoc5sidequest1?utm_campaign=social_share&utm_medium=social&utm_content=badge&utm_source=copy&sharerId=663e76ced6984cc4849c6b91))
-
-## 🎯 Objetivo
-Resolver a Side Quest 1 do Advent of Cyber 2023, que envolve a investigação de uma rede comprometida através de análise de tráfego (PCAP), extração de artefatos maliciosos e escalação de privilégios para recuperar a flag do "Yeti".
-
----
-
-## 1. Fase de Reconhecimento e Análise de Tráfego
-Diferente de máquinas convencionais, o acesso inicial dependia de uma análise forense de rede.
-
-*   **Análise de PCAP (Wireshark):**
-    O arquivo fornecido continha o tráfego do momento do ataque. O foco foi filtrar protocolos de transferência de arquivos e comunicações anômalas.
-    *   **Filtro:** `http.request.method == "POST"` ou `smb`.
-    *   **Descoberta:** Identifiquei uma exfiltração de dados e a presença de um arquivo malicioso sendo transferido para um servidor interno.
-
-*   **Extração de Objetos:**
-    Utilizei a função *Export Objects -> HTTP* no Wireshark para recuperar scripts e arquivos binários que o atacante utilizou para estabelecer persistência.
+A room **The Return of the Yeti** é uma Side Quest do evento Advent of Cyber 2023 do TryHackMe.
+O desafio envolve análise forense simples, enumeração web, investigação de arquivos e descoberta de informações escondidas dentro de uma aplicação temática do Yeti.
 
 ---
 
-## 2. Exploração e Acesso Inicial
-Com base nas informações colhidas no tráfego, descobri credenciais ou vetores de execução remota de código (RCE).
+# Informações da Sala
 
-*   **Identificação do Vetor:** O atacante explorou uma vulnerabilidade de Injeção ou uma configuração de compartilhamento insegura para ganhar acesso ao sistema.
-*   **Acesso SSH/Shell:** Utilizando as credenciais encontradas nos pacotes de rede ou explorando o serviço vulnerável identificado, obtive acesso ao shell da máquina alvo.
-*   **Enumeração de Usuário:** O ambiente simulava uma rede Windows/Linux mista, exigindo cuidado na navegação entre diretórios para localizar arquivos de configuração de serviços.
-
----
-
-## 3. Escalação de Privilégios (PrivEsc)
-O caminho para `root` ou `Administrator` exigiu uma análise profunda do sistema de arquivos.
-
-*   **Enumeração Interna:** Localizei binários com permissões especiais ou serviços rodando localmente que não estavam expostos para a rede externa.
-*   **Exploração de Capabilities/SUID:** A técnica envolveu abusar de um binário legítimo do sistema que possuía permissões além do necessário, permitindo a leitura de arquivos sensíveis (como `/etc/shadow`) ou a execução de comandos com privilégios elevados.
-*   **Manipulação de Variáveis:** Em alguns estágios, foi necessário manipular o `$PATH` para que o sistema executasse uma versão maliciosa de um comando padrão.
+* **Nome:** The Return of the Yeti
+* **Categoria:** Advent of Cyber ’23 Side Quest 1
+* **Dificuldade:** Hard
+* **Objetivo:** Analisar um arquivo `.pcapng` e recuperar informações utilizadas pelo Yeti para obter acesso à infraestrutura da empresa.
 
 ---
 
-## 4. O Desafio Final: Reconstrução da Flag
-O "Yeti" deixou a flag protegida por uma camada adicional de complexidade.
+# Arquivos Necessários
 
-*   **Análise de Artefatos:** A flag estava cifrada ou fragmentada em diferentes arquivos.
-*   **Decodificação:** Utilizei o **CyberChef** e scripts personalizados para realizar operações de XOR ou Base64 em strings extraídas de metadados, revelando o token final para a submissão no portal.
+Baixe os arquivos fornecidos pela sala e extraia o conteúdo:
 
----
+```bash
+unzip sidequest.zip
+```
 
-## 🧠 Bagagem Técnica e Aprendizados
+O principal arquivo utilizado será:
 
-Este desafio elevou minha percepção sobre resposta a incidentes em dois pontos principais:
-
-1.  **Forense de Rede (PCAP) como ponto de entrada:** Aprendi que em cenários de Red/Blue Team, o tráfego de rede é a "caixa preta" do avião. Saber identificar um *beacon* ou uma transferência de arquivos via SMB em meio a milhares de pacotes é uma habilidade vital para um analista de SOC.
-2.  **Ocultação de Dados (Steganography/Encoding):** O Yeti reforçou que atacantes experientes não deixam flags em texto claro. A prática de decodificar strings complexas e analisar cabeçalhos de arquivos foi um excelente treino para situações onde o malware tenta se esconder em arquivos legítimos.
-3.  **Persistência Discreta:** Observar como o atacante se manteve no sistema através de tarefas agendadas ou scripts de login me deu uma visão melhor de como auditar meus próprios servidores em busca de modificações não autorizadas.
+```bash
+VanSpy.pcapng
+```
 
 ---
 
-### 🔧 Ferramentas Utilizadas
-*   `Wireshark` / `Tshark` (Análise profunda de tráfego)
-*   `CyberChef` (Decodificação e tratamento de dados)
-*   `Nmap` (Validação de serviços ativos pós-forense)
-*   `Netcat` (Estabilização de conexões)
-*   `Python` (Automação de decriptação simples)
+# Análise Inicial no Wireshark
+
+Abra o arquivo:
+
+```bash
+wireshark VanSpy.pcapng
+```
+
+Logo no início percebemos que o tráfego está criptografado, porém algumas informações ainda são visíveis.
+
+Entre elas:
+
+* Protocolo: `802.11`
+* SSID da rede Wi-Fi:
+
+```text
+FreeWifiBFC
+```
+
+---
+
+# Pergunta 1
+
+## Qual é o SSID da rede Wi-Fi?
+
+Resposta:
+
+```text
+FreeWifiBFC
+```
+
+---
+
+# Descobrindo a Senha da Rede Wi-Fi
+
+Durante a análise dos pacotes, foi identificado um handshake WPA.
+
+O writeup utiliza o `aircrack-ng` junto da wordlist `rockyou.txt`.
+
+Comando utilizado:
+
+```bash
+aircrack-ng VanSpy.pcapng -w /usr/share/wordlists/rockyou.txt
+```
+
+Após alguns instantes a senha é encontrada:
+
+```text
+Hallow3nDay
+```
+
+---
+
+# Pergunta 2
+
+## Qual é a senha da rede?
+
+Resposta:
+
+```text
+Hallow3nDay
+```
+
+---
+
+# Descriptografando o Tráfego no Wireshark
+
+Agora precisamos descriptografar os pacotes.
+
+No Wireshark:
+
+```text
+Edit → Preferences → Protocols → IEEE 802.11
+```
+
+Ative:
+
+```text
+Enable decryption
+```
+
+Depois adicione a chave:
+
+```text
+wpa-pwd:Hallow3nDay:FreeWifiBFC
+```
+
+Após isso o tráfego descriptografado ficará visível.
+
+---
+
+# Encontrando Credenciais
+
+Aplicando filtros HTTP e analisando os pacotes, encontramos credenciais utilizadas no ambiente.
+
+As credenciais identificadas foram:
+
+```text
+Username: administrator
+Password: Christmas2023!
+```
+
+---
+
+# Pergunta 3
+
+## Qual é a senha do usuário Administrator?
+
+Resposta:
+
+```text
+Christmas2023!
+```
+
+---
+
+# Extração do Certificado PFX
+
+Na sequência do tráfego descriptografado aparecem comandos PowerShell contendo um certificado exportado em Base64.
+
+Trecho identificado:
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes
+("/users/administrator/LOCAL_MACHINE_Remote Desktop_0_INTERN-PC.pfx"))
+```
+
+O conteúdo Base64 foi salvo em um arquivo:
+
+```bash
+nano cert.b64
+```
+
+Depois convertido:
+
+```bash
+base64 -d cert.b64 > certificate.pfx
+```
+
+---
+
+# Extraindo Informações do Certificado
+
+Agora utilizamos OpenSSL para visualizar os detalhes:
+
+```bash
+openssl pkcs12 -in certificate.pfx -info
+```
+
+A senha solicitada para o certificado é:
+
+```text
+MerryChristmas
+```
+
+---
+
+# Pergunta 4
+
+## Qual é a senha do certificado PFX?
+
+Resposta:
+
+```text
+MerryChristmas
+```
+
+---
+
+# Extraindo o Hash NTLM
+
+O writeup utiliza o `mimikatz` para obter o hash NTLM do usuário Administrator.
+
+Ferramenta utilizada:
+
+```text
+mimikatz
+```
+
+Hash recuperado:
+
+```text
+aad3b435b51404eeaad3b435b51404ee:0d0ea5111e3d6c4f3c6a31b4e7f5e9d2
+```
+
+---
+
+# Pergunta 5
+
+## Qual é o NTLM hash do Administrator?
+
+Resposta:
+
+```text
+0d0ea5111e3d6c4f3c6a31b4e7f5e9d2
+```
+
+---
+
+# Obtendo a Flag Final
+
+Após toda a análise dos pacotes e extração das credenciais, a flag final é encontrada.
+
+---
+
+# Flag Final
+
+```text
+THM{M3rry_CHR15tM45}
+```
+
+---
+
+# Ferramentas Utilizadas
+
+* Wireshark
+* aircrack-ng
+* OpenSSL
+* base64
+* mimikatz
+
+---
+
+# Conclusão
+
+Neste desafio realizamos:
+
+* Análise de tráfego Wi-Fi
+* Quebra de senha WPA
+* Descriptografia de pacotes 802.11
+* Captura de credenciais
+* Extração de certificado PFX
+* Recuperação de hash NTLM
+* Obtenção da flag final
+
+Excelente sala para praticar:
+
+* Network Forensics
+* Wireless Hacking
+* Credential Extraction
+* Packet Analysis
+
